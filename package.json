@@ -1,0 +1,15 @@
+{
+  "name": "reminders",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudio Souto",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^38.1.2"
+  }
+}
