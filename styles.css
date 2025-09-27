@@ -1,6 +1,9 @@
 @import "node_modules/bootstrap/dist/css/bootstrap.min.css";
 @import "node_modules/bootstrap-icons/font/bootstrap-icons.css";
 
+/* Task styles */
+/* TODO: Dark mode */
+
 .task {
     background: white;
     padding: 1rem;
@@ -29,6 +32,7 @@
     font-size: 0.875rem;
     color: #007aff;
     font-weight: 500;
+    user-select: none;
 }
 
 .task-delete {
@@ -72,6 +76,31 @@
     transform: scale(1.1);
 }
 
+.task-overdue {
+    border-left: 3px solid #ff9500 !important;
+    background-color: #fffbf0 !important;
+    animation: gentle-glow 4s ease-in-out infinite;
+}
+
+.task-overdue .task-text {
+    color: #8b4513;
+    font-weight: 500;
+}
+
+.task-date.overdue {
+    color: #ff9500 !important;
+    font-weight: 600;
+}
+
+@keyframes gentle-glow {
+    0%, 100% {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    50% {
+        box-shadow: 0 2px 8px rgba(255, 149, 0, 0.15);
+    }
+}
+
 .form-control:focus {
     border-color: #007aff;
     box-shadow: 0 0 0 0.2rem rgba(0, 122, 255, 0.25);
@@ -79,4 +108,77 @@
 
 .form-floating > label {
     color: #8e8e93;
+}
+
+/* History styles */
+
+.history-toggle {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    user-select: none;
+}
+
+.history-toggle:hover {
+    color: #495057;
+}
+
+.task-completed {
+    opacity: 0.8;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.task-completed .task-text {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.task-completed .task-date {
+    color: #28a745 !important;
+    font-weight: 500;
+}
+
+.task-completed:hover {
+    opacity: 1;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.1);
+}
+
+.task-completed .task-delete:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+#historyList {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+#historyList h3 {
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#showHistory {
+    accent-color: #6c757d;
+    width: 1rem;
+    height: 1rem;
+}
+
+#showHistory:focus {
+    border-color: #6c757d;
+    box-shadow: none !important;
+}
+
+#showHistory:checked {
+    background-color: #6c757d;
+    border-color: #6c757d;
 }

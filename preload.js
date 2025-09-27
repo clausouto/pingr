@@ -4,5 +4,6 @@ contextBridge.exposeInMainWorld('remindersAPI', {
     addTask: (task) => ipcRenderer.invoke('add-task', task),
     getTasks: () => ipcRenderer.invoke('get-tasks'),
     deleteTask: (id) => ipcRenderer.invoke('delete-task', id),
-    completeTask: (id) => ipcRenderer.invoke('complete-task', id)
+    completeTask: (id) => ipcRenderer.invoke('complete-task', id),
+    onTasksUpdated: (callback) => ipcRenderer.on('tasks-updated', callback)
 });

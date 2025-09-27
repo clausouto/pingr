@@ -65,25 +65,40 @@ function calculateTimestamp(timeInfo) {
 }
 
 let listElement = document.getElementById("list");
+let historyListElement = document.getElementById("historyList");
+let historyContentElement = document.getElementById("historyContent");
+let showHistoryCheckbox = document.getElementById("showHistory");
 
 async function deleteTask(taskId) {
     await window.remindersAPI.deleteTask(taskId);
-    displayTasks();
+    refreshDisplay();
 }
 
 async function completeTask(taskId) {
     await window.remindersAPI.completeTask(taskId);
-    displayTasks();
+    refreshDisplay();
 }
 
 async function displayTasks() {
     const tasks = await window.remindersAPI.getTasks();
     listElement.innerHTML = '';
 
-    tasks.forEach(task => {
-        if (task.completed) return;
+    const activeTasks = tasks.filter(task => !task.completed);
+
+    if (activeTasks.length === 0) {
+        listElement.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-check-circle me-2"></i>Aucune tâche en cours</div>';
+        return;
+    }
+
+    activeTasks.forEach(task => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task d-flex justify-content-between align-items-start';
+
+        const now = Date.now();
+        const isOverdue = task.timestamp && task.timestamp < now;
+        if (isOverdue) {
+            taskElement.classList.add('task-overdue');
+        }
 
         let timeDisplay = '';
         if (task.timestamp) {
@@ -93,7 +108,15 @@ async function displayTasks() {
             const isTomorrow = date.toDateString() === new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString();
 
             let dateText;
-            if (isToday) {
+            if (isOverdue) {
+                dateText = `📌 Rappel - ${date.toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}`;
+            } else if (isToday) {
                 dateText = `Aujourd'hui ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
             } else if (isTomorrow) {
                 dateText = `Demain ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
@@ -107,7 +130,7 @@ async function displayTasks() {
                 });
             }
 
-            timeDisplay = `<div class="task-date">${dateText}</div>`;
+            timeDisplay = `<div class="task-date ${isOverdue ? 'overdue' : ''}">${dateText}</div>`;
         }
 
         taskElement.innerHTML = `
@@ -135,6 +158,46 @@ async function displayTasks() {
     });
 }
 
+async function displayHistory() {
+    const tasks = await window.remindersAPI.getTasks();
+    historyContentElement.innerHTML = '';
+
+    const completedTasks = tasks.filter(task => task.completed);
+
+    if (completedTasks.length === 0) {
+        historyContentElement.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-check-circle me-2"></i>Aucune tâche terminée</div>';
+        return;
+    }
+
+    completedTasks.forEach(task => {
+        const taskElement = document.createElement('div');
+        taskElement.className = 'task task-completed d-flex justify-content-between align-items-start';
+
+        taskElement.innerHTML = `
+            <div class="task-content">
+                <div class="task-text">${task.content}</div>
+                <div class="task-date"><i class="bi bi-check-circle-fill me-1"></i>Terminé</div>
+            </div>
+
+            <button class="task-delete" data-task-id="${task.id}" title="Supprimer définitivement">
+                <i class="bi bi-trash3"></i>
+            </button>
+        `;
+
+        const deleteButton = taskElement.querySelector('.task-delete');
+        deleteButton.addEventListener('click', () => deleteTask(task.id));
+
+        historyContentElement.appendChild(taskElement);
+    });
+}
+
+function refreshDisplay() {
+    displayTasks();
+    if (showHistoryCheckbox && showHistoryCheckbox.checked) {
+        displayHistory();
+    }
+}
+
 let form = document.getElementById("form");
 
 form.addEventListener("submit", (e) => {
@@ -150,9 +213,24 @@ form.addEventListener("submit", (e) => {
     });
 
     document.getElementById("content").value = '';
-    displayTasks();
+    refreshDisplay();
 });
 
+if (showHistoryCheckbox) {
+    showHistoryCheckbox.addEventListener('change', () => {
+        if (showHistoryCheckbox.checked) {
+            historyListElement.style.display = 'block';
+            displayHistory();
+        } else {
+            historyListElement.style.display = 'none';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    displayTasks();
+    refreshDisplay();
+
+    window.remindersAPI.onTasksUpdated(() => {
+        refreshDisplay();
+    });
 });
