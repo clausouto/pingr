@@ -2,7 +2,10 @@ const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 
-const TASKS_FILE = path.join(app.getPath('userData'), 'tasks.json');
+const TASKS_FILE = path.join(__dirname, 'tasks.json');
+
+//production
+//path.join(app.getPath('userData'), 'tasks.json');
 
 let notificationTimer;
 let tasksCache = null;
@@ -160,9 +163,9 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-    stopNotificationTimer();
-    console.log('Notification timer stopped.');
     if (process.platform !== 'darwin') {
+        console.log("notification timer stopped");
+        stopNotificationTimer();
         app.quit()
     }
 })
