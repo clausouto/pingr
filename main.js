@@ -47,17 +47,11 @@ app.whenReady().then(() => {
         const newTask = {
             id: crypto.randomUUID(),
             content: task.content,
-            timeInfo: task.timeInfo,
-            createdAt: new Date().toISOString(),
+            timestamp: task.timestamp,
+            createdAt: new Date().getTime(),
             completed: false,
             notified: false
         };
-
-        if (task.timeInfo && task.timeInfo.found) {
-            console.log(`Detected time keyword: ${task.timeInfo.match}`);
-            console.log(`Type: ${task.timeInfo.type}`);
-            console.log(`Value: ${task.timeInfo.value}`);
-        }
 
         tasks.push(newTask);
 
@@ -67,6 +61,21 @@ app.whenReady().then(() => {
         } else {
             console.log('Failed to save task');
             return { success: false, error: 'Failed to save task' };
+        }
+    });
+
+    ipcMain.handle('delete-task', (event, id) => {
+        let tasks = loadTasks();
+        tasks = tasks.filter(task => task.id !== id);
+        saveTasks(tasks);
+    });
+
+    ipcMain.handle('complete-task', (event, id) => {
+        const tasks = loadTasks();
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.completed = true;
+            saveTasks(tasks);
         }
     });
 

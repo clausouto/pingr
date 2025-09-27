@@ -5,25 +5,33 @@
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Electron Reminder</title>
+    <title>Rappels</title>
     <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body>
-    <header>
-        <h1>⏰ Electron Reminder</h1>
-    </header>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <header class="text-center mb-5">
+                    <h1 class="display-4 fw-light text-muted">Rappels</h1>
+                </header>
 
+                <main>
+                    <form id="form" class="mb-4">
+                        <div class="form-floating">
+                            <input id="content" type="text" class="form-control form-control-lg border-0 shadow-sm"
+                                placeholder="Qu'est-ce que je dois te rappeler ?" required />
+                            <label for="content">Qu'est-ce que je dois te rappeler ?</label>
+                        </div>
+                        <input type="submit" hidden />
+                    </form>
 
-    <main>
-        <form id="form">
-            <input id="content" type="text" placeholder="What should I remind you about?" required />
-            <input type="submit" hidden />
-        </form>
-
-
-        <section id="list"></section>
-    </main>
+                    <section id="list" class="mt-4"></section>
+                </main>
+            </div>
+        </div>
+    </div>
 
     <script src="renderer.js"></script>
 </body>

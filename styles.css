@@ -1,1 +1,82 @@
-/* Not happy with previous style */
+@import "node_modules/bootstrap/dist/css/bootstrap.min.css";
+@import "node_modules/bootstrap-icons/font/bootstrap-icons.css";
+
+.task {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.task:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.task-content {
+    flex: 1;
+}
+
+.task-text {
+    font-size: 1rem;
+    color: #1d1d1f;
+    margin-bottom: 0.25rem;
+}
+
+.task-date {
+    font-size: 0.875rem;
+    color: #007aff;
+    font-weight: 500;
+}
+
+.task-delete {
+    background: none;
+    border: none;
+    color: #8e8e93;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    margin-left: 0.5rem;
+}
+
+.task-complete {
+    background: none;
+    border: none;
+    color: #8e8e93;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    margin-right: 0.5rem;
+}
+
+.task:hover .task-delete,
+.task:hover .task-complete {
+    opacity: 1;
+}
+
+.task-delete:hover {
+    background-color: #ff3b30;
+    color: white;
+    transform: scale(1.1);
+}
+
+.task-complete:hover {
+    background-color: #34c759;
+    color: white;
+    transform: scale(1.1);
+}
+
+.form-control:focus {
+    border-color: #007aff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 122, 255, 0.25);
+}
+
+.form-floating > label {
+    color: #8e8e93;
+}
