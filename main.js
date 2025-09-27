@@ -57,7 +57,7 @@ function checkForNotifications() {
 
         if (!task.completed && !task.notified && task.timestamp <= now) {
             const notification = new Notification({
-                title: 'Reminder',
+                title: 'Pingr',
                 body: task.content,
             });
 
