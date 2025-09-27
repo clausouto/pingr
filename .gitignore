@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 
 # Tasks
 tasks.json
+
+# Mac system files
+.DS_Store
