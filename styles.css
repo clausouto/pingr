@@ -20,6 +20,7 @@
 
 .task-content {
     flex: 1;
+    cursor: pointer;
 }
 
 .task-text {
@@ -181,4 +182,66 @@
 #showHistory:checked {
     background-color: #6c757d;
     border-color: #6c757d;
+}
+
+/* Task editing styles */
+
+.task-editing {
+    border: 1px solid #007aff !important;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15) !important;
+    background: #f8f9ff !important;
+}
+
+.task-editing .task-content {
+    cursor: default;
+}
+
+.task-edit-input {
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: #1d1d1f;
+    width: 100%;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    line-height: inherit;
+}
+
+.task-edit-input:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.task-edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.task-edit-save,
+.task-edit-cancel {
+    background: none;
+    border: none;
+    color: #8e8e93;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.task-edit-save:hover {
+    background-color: #007aff;
+    color: white;
+    transform: scale(1.1);
+}
+
+.task-edit-cancel:hover {
+    background-color: #8e8e93;
+    color: white;
+    transform: scale(1.1);
 }

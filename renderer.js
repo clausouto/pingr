@@ -17,9 +17,6 @@ const TIME_PATTERNS = [
     }
 ];
 
-const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
-const DEFAULT_HOUR = 8;
-
 function analyzeTimeKeyword(content) {
     for (const pattern of TIME_PATTERNS) {
         const match = content.match(pattern.regex);
@@ -30,44 +27,19 @@ function analyzeTimeKeyword(content) {
             };
         }
     }
-    return false;
+    return null;
 }
 
-function calculateTimestamp(timeInfo) {
-    if (!timeInfo) return null;
 
-    const now = new Date();
-    const targetTime = new Date(now);
-
-    switch (timeInfo.type) {
-        case 'relative_minutes':
-            targetTime.setMinutes(now.getMinutes() + parseInt(timeInfo.value));
-            break;
-        case 'relative_hours':
-            targetTime.setHours(now.getHours() + parseInt(timeInfo.value));
-            break;
-        case 'relative_days':
-            targetTime.setDate(now.getDate() + parseInt(timeInfo.value));
-            break;
-        case 'specific_day':
-            const targetDayIndex = DAY_NAMES.indexOf(timeInfo.value.toLowerCase());
-            const currentDayIndex = now.getDay();
-            let daysUntilTarget = (targetDayIndex - currentDayIndex + 7) % 7;
-            if (daysUntilTarget === 0) daysUntilTarget = 7;
-            targetTime.setDate(now.getDate() + daysUntilTarget);
-            targetTime.setHours(DEFAULT_HOUR, 0, 0, 0);
-            break;
-        default:
-            return null;
-    }
-
-    return targetTime.getTime();
-}
 
 let listElement = document.getElementById("list");
 let historyListElement = document.getElementById("historyList");
 let historyContentElement = document.getElementById("historyContent");
 let showHistoryCheckbox = document.getElementById("showHistory");
+
+async function getTask(taskId) {
+    return await window.remindersAPI.getTask(taskId);
+}
 
 async function deleteTask(taskId) {
     await window.remindersAPI.deleteTask(taskId);
@@ -77,6 +49,98 @@ async function deleteTask(taskId) {
 async function completeTask(taskId) {
     await window.remindersAPI.completeTask(taskId);
     refreshDisplay();
+}
+
+async function editTask(taskId, newContent) {
+    const originalTask = await getTask(taskId);
+    if (!originalTask || originalTask.success === false) {
+        console.error('Task not found for editing');
+        return;
+    }
+    
+    let timeInfo = false;
+    const newTimeInfo = analyzeTimeKeyword(newContent.toLowerCase());
+    
+    if (newTimeInfo) {
+        if (originalTask.timeInfo && newTimeInfo.type === originalTask.timeInfo.type && newTimeInfo.value === originalTask.timeInfo.value) {
+            timeInfo = false;
+        } else {
+            timeInfo = newTimeInfo;
+        }
+    } else {
+        timeInfo = originalTask.timeInfo ? null : false;
+    }
+
+    await window.remindersAPI.editTask(taskId, newContent, timeInfo);
+    refreshDisplay();
+}
+
+function makeTaskEditable(taskElement, task) {
+    if (taskElement.classList.contains('task-editing')) {
+        console.log("discarding editing.")
+        return;
+    }
+
+    taskElement.classList.add('task-editing');
+    
+    const taskContentDiv = taskElement.querySelector('.task-content');
+    const taskTextDiv = taskContentDiv.querySelector('.task-text');
+    const originalContent = task.content;
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'task-edit-input';
+    input.value = originalContent + ' ';
+    
+    taskTextDiv.replaceWith(input);
+    
+    const completeButton = taskElement.querySelector('.task-complete');
+    const deleteButton = taskElement.querySelector('.task-delete');
+    completeButton.style.display = 'none';
+    deleteButton.style.display = 'none';
+    
+    input.focus();
+
+    let handleClickOutside;
+    
+    const saveEdit = async () => {
+        if (handleClickOutside) {
+            document.removeEventListener('click', handleClickOutside);
+        }
+
+        const newContent = input.value.trim();
+        if (newContent && newContent !== originalContent) {
+            await editTask(task.id, newContent);
+        } else {
+            refreshDisplay();
+        }
+    };
+    
+    const cancelEdit = () => {
+        refreshDisplay();
+    };
+    
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+
+    // cancel if clicked outside (with small delay to prevent immediate cancellation)
+    setTimeout(() => {
+        console.log("click outside check")
+        handleClickOutside = (e) => {
+            if (!taskElement.contains(e.target)) {
+                document.removeEventListener('click', handleClickOutside);
+                cancelEdit();
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+    }, 100);
 }
 
 async function displayTasks() {
@@ -149,10 +213,23 @@ async function displayTasks() {
         `;
 
         const deleteButton = taskElement.querySelector('.task-delete');
-        deleteButton.addEventListener('click', () => deleteTask(task.id));
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteTask(task.id);
+        });
 
         const completeButton = taskElement.querySelector('.task-complete');
-        completeButton.addEventListener('click', () => completeTask(task.id));
+        completeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            completeTask(task.id);
+        });
+
+        const taskContent = taskElement.querySelector('.task-content');
+        taskContent.addEventListener('click', (e) => {
+            if (!e.target.closest('.task-complete') && !e.target.closest('.task-delete')) {
+                makeTaskEditable(taskElement, task);
+            }
+        });
 
         listElement.appendChild(taskElement);
     });
@@ -205,11 +282,10 @@ form.addEventListener("submit", (e) => {
     let content = document.getElementById("content").value;
     let contentLower = content.toLowerCase();
     let timeInfo = analyzeTimeKeyword(contentLower);
-    let timestamp = calculateTimestamp(timeInfo) || null;
 
     window.remindersAPI.addTask({
         content,
-        timestamp
+        timeInfo
     });
 
     document.getElementById("content").value = '';
