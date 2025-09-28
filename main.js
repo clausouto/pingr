@@ -1,8 +1,12 @@
-const { app, BrowserWindow, ipcMain, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = require('electron');
+const AutoLaunch = require('auto-launch');
+
+if (require('electron-squirrel-startup')) app.quit();
+
 const path = require('node:path');
 const fs = require('node:fs');
 
-const TASKS_FILE = path.join(__dirname, 'tasks.json');
+const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.join(__dirname, 'tasks.json');
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
 const DEFAULT_HOUR = 8;
 
@@ -14,6 +18,7 @@ const DEFAULT_HOUR = 8;
 let notificationTimer;
 let tasksCache = null;
 let mainWindow = null;
+let tray = null;
 
 function loadTasks() {
     try {
@@ -129,6 +134,11 @@ function checkForNotifications() {
 
             notification.show();
 
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.once('focus', () => mainWindow.flashFrame(false));
+                mainWindow.flashFrame(true);
+            }
+
             task.notified = true;
             tasksUpdated = true;
 
@@ -146,6 +156,8 @@ function checkForNotifications() {
 }
 
 function startNotificationTimer() {
+    stopNotificationTimer();
+
     console.log('Starting notification timer...');
     notificationTimer = setInterval(checkForNotifications, 1000);
 
@@ -174,6 +186,16 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+    if (app.isPackaged) {
+        let autoLaunch = new AutoLaunch({
+            name: 'Pingr',
+            path: app.getPath('exe'),
+        });
+        autoLaunch.isEnabled().then((isEnabled) => {
+            if (!isEnabled) autoLaunch.enable();
+        });
+    }
+
     ipcMain.handle('add-task', (event, task) => {
         const tasks = loadTasks();
         const timestamp = calculateTimestamp(task.timeInfo) || null;
@@ -259,8 +281,6 @@ app.whenReady().then(() => {
 
                     // remove the adjustment part from content
                     task.content = newContent.replace(/([+-]\d+)/, '').trim();
-                    const currentValue = parseInt(task.timeInfo.value);
-                    task.timeInfo.value = (currentValue + adjustment).toString();
                 }
             }
 
@@ -286,17 +306,37 @@ app.whenReady().then(() => {
 
     startNotificationTimer();
 
+    tray = new Tray(nativeImage.createEmpty());
+    const menu = Menu.buildFromTemplate([
+        {
+            label: "Open Pingr window", click: (item, window, event) => {
+                mainWindow.show();
+            }
+        },
+        { type: "separator" },
+        { role: "quit" },
+    ]);
+    tray.setToolTip('Pingr')
+    tray.setContextMenu(menu);
+
+    app.on("before-quit", ev => {
+        // https://stackoverflow.com/questions/45481216/how-to-run-a-background-service-in-electron-js
+        // BrowserWindow "close" event spawn after quit operation,
+        // it requires to clean up listeners for "close" event
+        console.log('App is quitting, cleaning up...');
+        stopNotificationTimer();
+        mainWindow.removeAllListeners("close");
+        mainWindow = null;
+    });
+
+    mainWindow.on('close', (e) => {
+        e.preventDefault();
+        mainWindow.hide();
+    })
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow()
         }
     });
-})
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        console.log("notification timer stopped");
-        stopNotificationTimer();
-        app.quit()
-    }
 })
