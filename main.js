@@ -78,7 +78,6 @@ function calculateTimestamp(timeInfo) {
 }
 
 function checkForNotifications() {
-    //console.log('Checking for notifications...');
     const tasks = loadTasks();
     const now = Date.now();
     let tasksUpdated = false;
@@ -193,6 +192,42 @@ app.whenReady().then(() => {
             } else if (newTimeInfo === null) {
                 task.timestamp = null;
                 task.timeInfo = null;
+            } else if (newTimeInfo === false) {
+                if (!task.timeInfo || !task.timestamp) return;
+                const timeAdjustMatch = newContent.match(/([+-]\d+)/);
+                if (timeAdjustMatch) {
+                    const adjustment = parseInt(timeAdjustMatch[0]);
+                    if (isNaN(adjustment) || adjustment === 0) return;
+
+                    const now = new Date();
+                    let adjustmentMs = 0;
+
+                    switch (task.timeInfo.type) {
+                        case 'relative_minutes':
+                            adjustmentMs = adjustment * 60 * 1000;
+                            break;
+                        case 'relative_hours':
+                            adjustmentMs = adjustment * 60 * 60 * 1000;
+                            break;
+                        case 'relative_days':
+                            adjustmentMs = adjustment * 24 * 60 * 60 * 1000;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    if (now.getTime() > task.timestamp) {
+                        task.timestamp = now.getTime() + adjustmentMs;
+                    } else {
+                        task.timestamp += adjustmentMs;
+                        task.notified = false;
+                    }
+
+                    // remove the adjustment part from content
+                    task.content = newContent.replace(/([+-]\d+)/, '').trim();
+                    const currentValue = parseInt(task.timeInfo.value);
+                    task.timeInfo.value = (currentValue + adjustment).toString();
+                }
             }
 
             if (!saveTasks(tasks)) {

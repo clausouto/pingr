@@ -23,6 +23,7 @@ function analyzeTimeKeyword(content) {
         if (match) {
             return {
                 type: pattern.type,
+                match: match[0],
                 value: match[1],
             };
         }
@@ -117,6 +118,10 @@ function makeTaskEditable(taskElement, task) {
     };
     
     const cancelEdit = () => {
+        if (handleClickOutside) {
+            document.removeEventListener('click', handleClickOutside);
+        }
+
         refreshDisplay();
     };
     
@@ -164,6 +169,14 @@ async function displayTasks() {
             taskElement.classList.add('task-overdue');
         }
 
+        let displayContent = task.content;
+        if (task.timeInfo) {
+            // highlight time keyword
+            const regex = new RegExp(`\\b${task.timeInfo.match}\\b`, 'i');
+            displayContent = task.content.replace(regex, `<span class="time-keyword">$&</span>`);
+
+        }
+
         let timeDisplay = '';
         if (task.timestamp) {
             const date = new Date(task.timestamp);
@@ -199,7 +212,7 @@ async function displayTasks() {
 
         taskElement.innerHTML = `
             <div class="task-content">
-                <div class="task-text">${task.content}</div>
+                <div class="task-text">${displayContent}</div>
                 ${timeDisplay}
             </div>
 

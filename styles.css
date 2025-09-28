@@ -36,6 +36,14 @@
     user-select: none;
 }
 
+.time-keyword {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
 .task-delete {
     background: none;
     border: none;
@@ -86,6 +94,11 @@
 .task-overdue .task-text {
     color: #8b4513;
     font-weight: 500;
+}
+
+.task-overdue .time-keyword {
+    background-color: #ffebee;
+    color: #d32f2f;
 }
 
 .task-date.overdue {
