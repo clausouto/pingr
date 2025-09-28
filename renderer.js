@@ -1,37 +1,43 @@
 const TIME_PATTERNS = [
     {
-        regex: /\b(?:dans|après)\s+(\d+)\s+(minutes?)\b/i,
+        regex: /\b(?:dans|après)\s+(?<minutes>[1-9]\d*)\s*(?:m(?:in(?:s)?)?|minutes?)(?:\s*(?<seconds>[1-5]?\d))?(?!\w)/iu,
         type: 'relative_minutes',
     },
     {
-        regex: /\b(?:dans|après)\s+(\d+)\s+(heures?)\b/i,
+        regex: /\b(?:dans|après)\s+(?<hours>[1-9]\d*)\s*(?:h(?:r?s?)?|heures?)(?:\s*(?<minutes>[1-5]?\d))?(?!\w)/iu,
         type: 'relative_hours',
     },
     {
-        regex: /\b(?:dans|après)\s+(\d+)\s+(jours?)\b/i,
+        regex: /\b(?:dans|après)\s+(?<days>[1-9]\d*)\s+jours?(?!\w)/iu,
         type: 'relative_days',
     },
     {
-        regex: /\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i,
+        regex: /\b(?<keyword>lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|aujourd'hui|auj|demain|dem|après-demain)\b(?:\s+à\s+(?<hours>[01]?\d|2[0-3])h(?:\s*(?<minutes>[0-5]\d))?)?/iu,
         type: 'specific_day',
-    }
+    },
 ];
 
 function analyzeTimeKeyword(content) {
     for (const pattern of TIME_PATTERNS) {
-        const match = content.match(pattern.regex);
-        if (match) {
-            return {
-                type: pattern.type,
-                match: match[0],
-                value: match[1],
-            };
-        }
+        const match = pattern.regex.exec(content);
+        if (!match) continue;
+
+        const g = match.groups || {};
+
+        const result = {
+            type: pattern.type,
+            match: match[0],
+            keyword: g.keyword ?? null,
+            hours: g.hours ? +g.hours : null,
+            minutes: g.minutes ? +g.minutes : null,
+            seconds: g.seconds ? +g.seconds : null,
+            days: g.days ? +g.days : null,
+        };
+
+        return result;
     }
     return null;
 }
-
-
 
 let listElement = document.getElementById("list");
 let historyListElement = document.getElementById("historyList");
@@ -58,19 +64,15 @@ async function editTask(taskId, newContent) {
         console.error('Task not found for editing');
         return;
     }
-    
-    let timeInfo = false;
+
+    const key = (t) => t
+        ? `${t.type}|${t.keyword ?? ""}|${t.hours ?? ""}|${t.minutes ?? ""}|${t.seconds ?? ""}|${t.days ?? ""}`
+        : '';
+
     const newTimeInfo = analyzeTimeKeyword(newContent.toLowerCase());
-    
-    if (newTimeInfo) {
-        if (originalTask.timeInfo && newTimeInfo.type === originalTask.timeInfo.type && newTimeInfo.value === originalTask.timeInfo.value) {
-            timeInfo = false;
-        } else {
-            timeInfo = newTimeInfo;
-        }
-    } else {
-        timeInfo = originalTask.timeInfo ? null : false;
-    }
+
+    const same = key(originalTask.timeInfo) === key(newTimeInfo);
+    const timeInfo = same ? false : (!newTimeInfo && originalTask.timeInfo ? null : newTimeInfo);
 
     await window.remindersAPI.editTask(taskId, newContent, timeInfo);
     refreshDisplay();
@@ -83,27 +85,27 @@ function makeTaskEditable(taskElement, task) {
     }
 
     taskElement.classList.add('task-editing');
-    
+
     const taskContentDiv = taskElement.querySelector('.task-content');
     const taskTextDiv = taskContentDiv.querySelector('.task-text');
     const originalContent = task.content;
-    
+
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'task-edit-input';
     input.value = originalContent + ' ';
-    
+
     taskTextDiv.replaceWith(input);
-    
+
     const completeButton = taskElement.querySelector('.task-complete');
     const deleteButton = taskElement.querySelector('.task-delete');
     completeButton.style.display = 'none';
     deleteButton.style.display = 'none';
-    
+
     input.focus();
 
     let handleClickOutside;
-    
+
     const saveEdit = async () => {
         if (handleClickOutside) {
             document.removeEventListener('click', handleClickOutside);
@@ -116,7 +118,7 @@ function makeTaskEditable(taskElement, task) {
             refreshDisplay();
         }
     };
-    
+
     const cancelEdit = () => {
         if (handleClickOutside) {
             document.removeEventListener('click', handleClickOutside);
@@ -124,7 +126,7 @@ function makeTaskEditable(taskElement, task) {
 
         refreshDisplay();
     };
-    
+
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();

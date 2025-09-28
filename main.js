@@ -6,6 +6,8 @@ const TASKS_FILE = path.join(__dirname, 'tasks.json');
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
 const DEFAULT_HOUR = 8;
 
+//dev
+//path.join(__dirname, 'tasks.json');
 //production
 //path.join(app.getPath('userData'), 'tasks.json');
 
@@ -54,21 +56,53 @@ function calculateTimestamp(timeInfo) {
 
     switch (timeInfo.type) {
         case 'relative_minutes':
-            targetTime.setMinutes(now.getMinutes() + parseInt(timeInfo.value));
+            targetTime.setMinutes(now.getMinutes() + timeInfo.minutes);
+
+            if (timeInfo.seconds) {
+                targetTime.setSeconds(now.getSeconds() + timeInfo.seconds);
+            }
             break;
         case 'relative_hours':
-            targetTime.setHours(now.getHours() + parseInt(timeInfo.value));
+            targetTime.setHours(now.getHours() + timeInfo.hours);
+
+            if (timeInfo.minutes) {
+                targetTime.setMinutes(now.getMinutes() + timeInfo.minutes);
+            }
             break;
         case 'relative_days':
-            targetTime.setDate(now.getDate() + parseInt(timeInfo.value));
+            targetTime.setDate(now.getDate() + timeInfo.days);
             break;
         case 'specific_day':
-            const targetDayIndex = DAY_NAMES.indexOf(timeInfo.value.toLowerCase());
-            const currentDayIndex = now.getDay();
-            let daysUntilTarget = (targetDayIndex - currentDayIndex + 7) % 7;
-            if (daysUntilTarget === 0) daysUntilTarget = 7;
-            targetTime.setDate(now.getDate() + daysUntilTarget);
-            targetTime.setHours(DEFAULT_HOUR, 0, 0, 0);
+            const hour = timeInfo.hours || DEFAULT_HOUR;
+            const minute = timeInfo.minutes || 0;
+
+            // => days to add
+            const dayHandlers = {
+                "aujourd'hui": () => 0,
+                "auj": () => 0,
+                "demain": () => 1,
+                "dem": () => 1,
+                "après-demain": () => 2
+            };
+
+            const keyword = timeInfo.keyword.toLowerCase();
+
+            if (dayHandlers[keyword]) {
+                const daysToAdd = dayHandlers[keyword]();
+                if (daysToAdd > 0) {
+                    targetTime.setDate(now.getDate() + daysToAdd);
+                }
+                targetTime.setHours(hour, minute, 0, 0);
+            } else {
+                const targetDayIndex = DAY_NAMES.indexOf(keyword);
+                if (targetDayIndex !== -1) {
+                    const currentDayIndex = now.getDay();
+                    let daysUntilTarget = (targetDayIndex - currentDayIndex + 7) % 7;
+                    if (daysUntilTarget === 0) daysUntilTarget = 7;
+                    targetTime.setDate(now.getDate() + daysUntilTarget);
+                    targetTime.setHours(hour, minute, 0, 0);
+                }
+            }
             break;
         default:
             return null;
@@ -114,7 +148,7 @@ function checkForNotifications() {
 function startNotificationTimer() {
     console.log('Starting notification timer...');
     notificationTimer = setInterval(checkForNotifications, 1000);
-    
+
     checkForNotifications();
 }
 
@@ -135,7 +169,7 @@ const createWindow = () => {
     })
 
     // open dev tools
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
     mainWindow.loadFile('index.html')
 }
 
@@ -218,9 +252,9 @@ app.whenReady().then(() => {
 
                     if (now.getTime() > task.timestamp) {
                         task.timestamp = now.getTime() + adjustmentMs;
+                        task.notified = false;
                     } else {
                         task.timestamp += adjustmentMs;
-                        task.notified = false;
                     }
 
                     // remove the adjustment part from content
