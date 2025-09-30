@@ -186,15 +186,21 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
-    if (app.isPackaged) {
+    new Notification({ title: 'Pingr', body: 'Application started' }).show();
+    /*if (app.isPackaged) {
         let autoLaunch = new AutoLaunch({
             name: 'Pingr',
-            path: app.getPath('exe'),
+            mac: {
+                useLaunchAgent: true
+            },
         });
         autoLaunch.isEnabled().then((isEnabled) => {
-            if (!isEnabled) autoLaunch.enable();
+            if (!isEnabled) {
+                console.log('Enabling auto launch at startup');
+                autoLaunch.enable();
+            }
         });
-    }
+   }*/
 
     ipcMain.handle('add-task', (event, task) => {
         const tasks = loadTasks();
