@@ -1,34 +1,35 @@
 const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = require('electron');
+const Logger = require('./src/logger');
 const AutoLaunch = require('auto-launch');
-
-if (require('electron-squirrel-startup')) app.quit();
-
 const path = require('node:path');
 const fs = require('node:fs');
 
+if (require('electron-squirrel-startup')) app.quit();
+
 const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.join(__dirname, 'tasks.json');
+const ICON = nativeImage.createFromPath(path.join(__dirname, "icon.png"))
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
 const DEFAULT_HOUR = 8;
-
-//dev
-//path.join(__dirname, 'tasks.json');
-//production
-//path.join(app.getPath('userData'), 'tasks.json');
 
 let notificationTimer;
 let tasksCache = null;
 let mainWindow = null;
 let tray = null;
 
+process.on('uncaughtException', (error) => {
+    Logger.error('Uncaught Exception', error);
+    if (!app.isPackaged) {
+        process.exit(1);
+    }
+});
+
 function loadTasks() {
     try {
         if (tasksCache !== null) {
-            //console.log("Using cached tasks");
             return tasksCache;
         }
 
         if (fs.existsSync(TASKS_FILE)) {
-            console.log("Loading tasks from file");
             const data = fs.readFileSync(TASKS_FILE, 'utf8');
             tasksCache = JSON.parse(data);
             return tasksCache;
@@ -37,7 +38,7 @@ function loadTasks() {
             return tasksCache;
         }
     } catch (error) {
-        console.error('Error loading tasks:', error);
+        Logger.error('Error loading tasks', error);
     }
     return [];
 }
@@ -48,7 +49,7 @@ function saveTasks(tasks) {
         tasksCache = tasks;
         return true;
     } catch (error) {
-        console.error('Error saving tasks:', error);
+        Logger.error('Error saving tasks', error);
         return false;
     }
 }
@@ -141,8 +142,6 @@ function checkForNotifications() {
 
             task.notified = true;
             tasksUpdated = true;
-
-            console.log(`Notification sent for task: ${task.content}`);
         }
     }
 
@@ -158,7 +157,6 @@ function checkForNotifications() {
 function startNotificationTimer() {
     stopNotificationTimer();
 
-    console.log('Starting notification timer...');
     notificationTimer = setInterval(checkForNotifications, 1000);
 
     checkForNotifications();
@@ -186,8 +184,7 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
-    new Notification({ title: 'Pingr', body: 'Application started' }).show();
-    /*if (app.isPackaged) {
+    if (app.isPackaged) {
         let autoLaunch = new AutoLaunch({
             name: 'Pingr',
             mac: {
@@ -196,11 +193,11 @@ app.whenReady().then(() => {
         });
         autoLaunch.isEnabled().then((isEnabled) => {
             if (!isEnabled) {
-                console.log('Enabling auto launch at startup');
+                Logger.info('Enabling auto launch at startup');
                 autoLaunch.enable();
             }
         });
-   }*/
+   }
 
     ipcMain.handle('add-task', (event, task) => {
         const tasks = loadTasks();
@@ -219,10 +216,10 @@ app.whenReady().then(() => {
         tasks.push(newTask);
 
         if (saveTasks(tasks)) {
-            console.log('Task saved successfully');
+            Logger.info(`Task saved successfully: ${newTask.content}`);
             return { success: true, task: newTask };
         } else {
-            console.log('Failed to save task');
+            Logger.error('Failed to save task');
             return { success: false, error: 'Failed to save task' };
         }
     });
@@ -312,7 +309,7 @@ app.whenReady().then(() => {
 
     startNotificationTimer();
 
-    tray = new Tray(nativeImage.createEmpty());
+    tray = new Tray(ICON);
     const menu = Menu.buildFromTemplate([
         {
             label: "Open Pingr window", click: (item, window, event) => {
