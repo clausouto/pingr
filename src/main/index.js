@@ -1,13 +1,13 @@
 const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = require('electron');
-const Logger = require('./src/logger');
+const Logger = require('./logger');
 const AutoLaunch = require('auto-launch');
 const path = require('node:path');
 const fs = require('node:fs');
 
 if (require('electron-squirrel-startup')) app.quit();
 
-const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.join(__dirname, 'tasks.json');
-const ICON = nativeImage.createFromPath(path.join(__dirname, "icon.png"))
+const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.resolve(__dirname, '..', '..', 'tasks.json');
+const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
 const DEFAULT_HOUR = 8;
 
@@ -22,6 +22,10 @@ process.on('uncaughtException', (error) => {
         process.exit(1);
     }
 });
+
+function sourceFile() {
+    return path.resolve(__dirname, '..', 'renderer', 'index.html')
+}
 
 function loadTasks() {
     try {
@@ -174,13 +178,13 @@ const createWindow = () => {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
+            preload: path.resolve(__dirname, '..', 'preload', 'app.js')
         }
     })
 
     // open dev tools
-    //mainWindow.webContents.openDevTools();
-    mainWindow.loadFile('index.html')
+    mainWindow.webContents.openDevTools();
+    mainWindow.loadFile(sourceFile());
 }
 
 app.whenReady().then(() => {
