@@ -174,16 +174,33 @@ function stopNotificationTimer() {
 }
 
 const createWindow = () => {
+    const gotTheLock = app.requestSingleInstanceLock();
+    if (!gotTheLock) {
+        app.quit();
+        return;
+    } else {
+        app.on('second-instance', (event, commandLine, workingDirectory) => {
+            if (mainWindow) {
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                mainWindow.show();
+                mainWindow.focus();
+            } else {
+                createWindow();
+            }
+        });
+    }
+
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        icon: ICON,
         webPreferences: {
             preload: path.resolve(__dirname, '..', 'preload', 'app.js')
         }
     })
 
     // open dev tools
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
     mainWindow.loadFile(sourceFile());
 }
 
@@ -313,27 +330,48 @@ app.whenReady().then(() => {
 
     startNotificationTimer();
 
-    tray = new Tray(ICON);
-    const menu = Menu.buildFromTemplate([
-        {
-            label: "Open Pingr window", click: (item, window, event) => {
+    if (!tray) {
+        tray = new Tray(ICON);
+        const menu = Menu.buildFromTemplate([
+            {
+                label: "Open Pingr window", click: (item, window, event) => {
+                    if (mainWindow) {
+                        mainWindow.show();
+                        mainWindow.focus();
+                    } else {
+                        createWindow();
+                    }
+                }
+            },
+            { type: "separator" },
+            { role: "quit" },
+        ]);
+        tray.setToolTip('Pingr')
+        tray.setContextMenu(menu);
+        
+        tray.on('click', () => {
+            if (mainWindow) {
                 mainWindow.show();
+                mainWindow.focus();
+            } else {
+                createWindow();
             }
-        },
-        { type: "separator" },
-        { role: "quit" },
-    ]);
-    tray.setToolTip('Pingr')
-    tray.setContextMenu(menu);
+        });
+    }
 
     app.on("before-quit", ev => {
-        // https://stackoverflow.com/questions/45481216/how-to-run-a-background-service-in-electron-js
-        // BrowserWindow "close" event spawn after quit operation,
-        // it requires to clean up listeners for "close" event
         console.log('App is quitting, cleaning up...');
         stopNotificationTimer();
-        mainWindow.removeAllListeners("close");
-        mainWindow = null;
+
+        if (mainWindow) {
+            mainWindow.removeAllListeners("close");
+            mainWindow = null;
+        }
+
+        if (tray) {
+            tray.destroy();
+            tray = null;
+        }
     });
 
     mainWindow.on('close', (e) => {
