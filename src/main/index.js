@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = require('electron');
 const Logger = require('./logger');
-const AutoLaunch = require('auto-launch');
 const path = require('node:path');
 const fs = require('node:fs');
+const chrono = require('chrono-node');
 
 if (require('electron-squirrel-startup')) app.quit();
 
@@ -11,7 +11,7 @@ const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'res
 const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
 const DEFAULT_HOUR = 8;
 
-let notificationTimer;
+let notificationTimer = null;
 let tasksCache = null;
 let mainWindow = null;
 let tray = null;
@@ -205,19 +205,10 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+    require('./menu');
+
     if (app.isPackaged) {
-        let autoLaunch = new AutoLaunch({
-            name: 'Pingr',
-            mac: {
-                useLaunchAgent: true
-            },
-        });
-        autoLaunch.isEnabled().then((isEnabled) => {
-            if (!isEnabled) {
-                Logger.info('Enabling auto launch at startup');
-                autoLaunch.enable();
-            }
-        });
+
    }
 
     ipcMain.handle('add-task', (event, task) => {

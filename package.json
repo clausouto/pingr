@@ -28,6 +28,7 @@
     "auto-launch": "^5.0.6",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "chrono-node": "^2.9.0",
     "electron-squirrel-startup": "^1.0.1"
   }
 }
