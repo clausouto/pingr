@@ -1,44 +1,3 @@
-const TIME_PATTERNS = [
-    {
-        regex: /\b(?:dans|après)\s+(?<minutes>[1-9]\d*)\s*(?:m(?:in(?:s)?)?|minutes?)(?:\s*(?<seconds>[1-5]?\d))?(?!\w)/iu,
-        type: 'relative_minutes',
-    },
-    {
-        regex: /\b(?:dans|après)\s+(?<hours>[1-9]\d*)\s*(?:h(?:r?s?)?|heures?)(?:\s*(?<minutes>[1-5]?\d))?(?!\w)/iu,
-        type: 'relative_hours',
-    },
-    {
-        regex: /\b(?:dans|après)\s+(?<days>[1-9]\d*)\s+jours?(?!\w)/iu,
-        type: 'relative_days',
-    },
-    {
-        regex: /\b(?<keyword>lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|aujourd'hui|auj|demain|dem|après-demain)\b(?:\s+à\s+(?<hours>[01]?\d|2[0-3])h(?:\s*(?<minutes>[0-5]\d))?)?/iu,
-        type: 'specific_day',
-    },
-];
-
-function analyzeTimeKeyword(content) {
-    for (const pattern of TIME_PATTERNS) {
-        const match = pattern.regex.exec(content);
-        if (!match) continue;
-
-        const g = match.groups || {};
-
-        const result = {
-            type: pattern.type,
-            match: match[0],
-            keyword: g.keyword ?? null,
-            hours: g.hours ? +g.hours : null,
-            minutes: g.minutes ? +g.minutes : null,
-            seconds: g.seconds ? +g.seconds : null,
-            days: g.days ? +g.days : null,
-        };
-
-        return result;
-    }
-    return null;
-}
-
 let listElement = document.getElementById("list");
 let historyListElement = document.getElementById("historyList");
 let historyContentElement = document.getElementById("historyContent");
@@ -65,16 +24,7 @@ async function editTask(taskId, newContent) {
         return;
     }
 
-    const key = (t) => t
-        ? `${t.type}|${t.keyword ?? ""}|${t.hours ?? ""}|${t.minutes ?? ""}|${t.seconds ?? ""}|${t.days ?? ""}`
-        : '';
-
-    const newTimeInfo = analyzeTimeKeyword(newContent.toLowerCase());
-
-    const same = key(originalTask.timeInfo) === key(newTimeInfo);
-    const timeInfo = same ? false : (!newTimeInfo && originalTask.timeInfo ? null : newTimeInfo);
-
-    await window.remindersAPI.editTask(taskId, newContent, timeInfo);
+    await window.remindersAPI.editTask(taskId, newContent);
     refreshDisplay();
 }
 
@@ -172,9 +122,9 @@ async function displayTasks() {
         }
 
         let displayContent = task.content;
-        if (task.timeInfo) {
+        if (task.timestamp) {
             // highlight time keyword
-            const regex = new RegExp(`\\b${task.timeInfo.match}\\b`, 'i');
+            const regex = new RegExp(`\\b${task.timeText}\\b`, 'i');
             displayContent = task.content.replace(regex, `<span class="time-keyword">$&</span>`);
 
         }
@@ -295,12 +245,9 @@ let form = document.getElementById("form");
 form.addEventListener("submit", (e) => {
     e.preventDefault();
     let content = document.getElementById("content").value;
-    let contentLower = content.toLowerCase();
-    let timeInfo = analyzeTimeKeyword(contentLower);
 
     window.remindersAPI.addTask({
-        content,
-        timeInfo
+        content
     });
 
     document.getElementById("content").value = '';

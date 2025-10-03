@@ -8,8 +8,6 @@ if (require('electron-squirrel-startup')) app.quit();
 
 const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.resolve(__dirname, '..', '..', 'tasks.json');
 const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
-const DAY_NAMES = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; // commencer par dimanche car getDay() renvoie 0 pour dimanche
-const DEFAULT_HOUR = 8;
 
 let notificationTimer = null;
 let tasksCache = null;
@@ -58,67 +56,21 @@ function saveTasks(tasks) {
     }
 }
 
-function calculateTimestamp(timeInfo) {
-    if (!timeInfo) return null;
-
-    const now = new Date();
-    const targetTime = new Date(now);
-
-    switch (timeInfo.type) {
-        case 'relative_minutes':
-            targetTime.setMinutes(now.getMinutes() + timeInfo.minutes);
-
-            if (timeInfo.seconds) {
-                targetTime.setSeconds(now.getSeconds() + timeInfo.seconds);
-            }
-            break;
-        case 'relative_hours':
-            targetTime.setHours(now.getHours() + timeInfo.hours);
-
-            if (timeInfo.minutes) {
-                targetTime.setMinutes(now.getMinutes() + timeInfo.minutes);
-            }
-            break;
-        case 'relative_days':
-            targetTime.setDate(now.getDate() + timeInfo.days);
-            break;
-        case 'specific_day':
-            const hour = timeInfo.hours || DEFAULT_HOUR;
-            const minute = timeInfo.minutes || 0;
-
-            // => days to add
-            const dayHandlers = {
-                "aujourd'hui": () => 0,
-                "auj": () => 0,
-                "demain": () => 1,
-                "dem": () => 1,
-                "après-demain": () => 2
-            };
-
-            const keyword = timeInfo.keyword.toLowerCase();
-
-            if (dayHandlers[keyword]) {
-                const daysToAdd = dayHandlers[keyword]();
-                if (daysToAdd > 0) {
-                    targetTime.setDate(now.getDate() + daysToAdd);
-                }
-                targetTime.setHours(hour, minute, 0, 0);
-            } else {
-                const targetDayIndex = DAY_NAMES.indexOf(keyword);
-                if (targetDayIndex !== -1) {
-                    const currentDayIndex = now.getDay();
-                    let daysUntilTarget = (targetDayIndex - currentDayIndex + 7) % 7;
-                    if (daysUntilTarget === 0) daysUntilTarget = 7;
-                    targetTime.setDate(now.getDate() + daysUntilTarget);
-                    targetTime.setHours(hour, minute, 0, 0);
-                }
-            }
-            break;
-        default:
-            return null;
+function calculateTime(content) {
+    if (!content) return;
+    try {
+        const timeInfo = chrono.fr.parse(content);
+        if (timeInfo.length === 0) return {
+            text: null,
+            timestamp: null
+        };
+        return {
+            text: timeInfo[0].text,
+            timestamp: timeInfo[0].start.date().getTime(),
+        }
+    } catch (error) {
+        Logger.error('Error parsing date', error);
     }
-
-    return targetTime.getTime();
 }
 
 function checkForNotifications() {
@@ -207,19 +159,15 @@ const createWindow = () => {
 app.whenReady().then(() => {
     require('./menu');
 
-    if (app.isPackaged) {
-
-   }
-
     ipcMain.handle('add-task', (event, task) => {
         const tasks = loadTasks();
-        const timestamp = calculateTimestamp(task.timeInfo) || null;
+        const time = calculateTime(task.content);
 
         const newTask = {
             id: crypto.randomUUID(),
             content: task.content,
-            timeInfo: task.timeInfo,
-            timestamp: timestamp,
+            timeText: time.text,
+            timestamp: time.timestamp,
             createdAt: new Date().getTime(),
             completed: false,
             notified: false
@@ -251,58 +199,44 @@ app.whenReady().then(() => {
         }
     });
 
-    ipcMain.handle('edit-task', (event, id, newContent, newTimeInfo) => {
+    ipcMain.handle('edit-task', (event, id, newContent) => {
         const tasks = loadTasks();
         const task = tasks.find(t => t.id === id);
+
         if (task) {
+            const newTime = calculateTime(newContent);
             task.content = newContent;
-
-            if (newTimeInfo !== false && newTimeInfo !== null) {
-                task.timestamp = calculateTimestamp(newTimeInfo) || null;
-                task.timeInfo = newTimeInfo;
-            } else if (newTimeInfo === null) {
-                task.timestamp = null;
-                task.timeInfo = null;
-            } else if (newTimeInfo === false) {
-                if (!task.timeInfo || !task.timestamp) return;
-                const timeAdjustMatch = newContent.match(/([+-]\d+)/);
-                if (timeAdjustMatch) {
-                    const adjustment = parseInt(timeAdjustMatch[0]);
-                    if (isNaN(adjustment) || adjustment === 0) return;
-
-                    const now = new Date();
-                    let adjustmentMs = 0;
-
-                    switch (task.timeInfo.type) {
-                        case 'relative_minutes':
-                            adjustmentMs = adjustment * 60 * 1000;
-                            break;
-                        case 'relative_hours':
-                            adjustmentMs = adjustment * 60 * 60 * 1000;
-                            break;
-                        case 'relative_days':
-                            adjustmentMs = adjustment * 24 * 60 * 60 * 1000;
-                            break;
-                        default:
-                            return;
-                    }
-
-                    if (now.getTime() > task.timestamp) {
-                        task.timestamp = now.getTime() + adjustmentMs;
+            if (newTime && newTime.text && newTime.timestamp) {
+                if (task.timeText !== newTime.text) {
+                    if (task.timestamp !== newTime.timestamp) {
                         task.notified = false;
-                    } else {
-                        task.timestamp += adjustmentMs;
                     }
+                    task.timeText = newTime.text;
+                    task.timestamp = newTime.timestamp;
+                } else {
+                    const timeAdjustMatch = newContent.match(/([+-]\d+)/);
+                    if (timeAdjustMatch) {
+                        const now = new Date();
+                        let adjustment = parseInt(timeAdjustMatch[0]);
+                        adjustment *= 60 * 1000;
+                        if (now.getTime() > task.timestamp) {
+                            task.timestamp = now.getTime() + adjustment;
+                            task.notified = false;
+                        } else {
+                            task.timestamp += adjustment;
+                        }
 
-                    // remove the adjustment part from content
-                    task.content = newContent.replace(/([+-]\d+)/, '').trim();
+                        task.content = newContent.replace(/([+-]\d+)/, '').trim();
+                    }
                 }
+            } else {
+                task.timeText = null;
+                task.timestamp = null;
             }
-
-            if (!saveTasks(tasks)) {
-                return { success: false, error: 'Failed to save task' };
-            }
+            saveTasks(tasks);
+            return { success: true };
         }
+
         return { success: false, error: 'Task not found' };
     });
 
@@ -339,7 +273,7 @@ app.whenReady().then(() => {
         ]);
         tray.setToolTip('Pingr')
         tray.setContextMenu(menu);
-        
+
         tray.on('click', () => {
             if (mainWindow) {
                 mainWindow.show();
