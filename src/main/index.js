@@ -7,7 +7,7 @@ const chrono = require('chrono-node');
 if (require('electron-squirrel-startup')) app.quit();
 
 const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.resolve(__dirname, '..', '..', 'tasks.json');
-const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'mini-icon.png'));
+const ICON = nativeImage.createFromPath(process.platform === 'darwin' ? path.resolve(__dirname, '..', '..', 'resources', 'mini-icon-apple.png') : path.resolve(__dirname, '..', '..', 'resources', 'mini-icon.png'));
 
 let notificationTimer = null;
 let tasksCache = null;
