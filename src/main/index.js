@@ -2,11 +2,13 @@ const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = r
 const Logger = require('./logger');
 const { loadTasks, saveTasks } = require('./tasks');
 const { loadConfig } = require('./config');
+const { updateElectronApp } = require('update-electron-app');
 const path = require('node:path');
 const chrono = require('chrono-node');
 const crypto = require('crypto');
 
 if (require('electron-squirrel-startup')) app.quit();
+updateElectronApp();
 
 const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
 const TRAY_ICON = nativeImage.createFromPath(process.platform === 'darwin' ? path.resolve(__dirname, '..', '..', 'resources', 'tray-icon-apple.png') : path.resolve(__dirname, '..', '..', 'resources', 'tray-icon.png'));
