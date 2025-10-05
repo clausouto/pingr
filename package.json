@@ -8,7 +8,8 @@
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
   },
   "author": "Claudio Souto",
   "license": "MIT",
@@ -21,6 +22,7 @@
     "@electron-forge/maker-zip": "^7.9.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.9.0",
     "@electron-forge/plugin-fuses": "^7.9.0",
+    "@electron-forge/publisher-github": "^7.9.0",
     "@electron/fuses": "^1.8.0",
     "electron": "^38.1.2"
   },
@@ -29,6 +31,7 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "chrono-node": "^2.9.0",
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "update-electron-app": "^3.1.1"
   }
 }

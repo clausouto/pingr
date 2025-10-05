@@ -49,4 +49,17 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name : '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'clausouto',
+          name: 'pingr',
+        },
+        prerelease: false,
+        authToken: process.env.GITHUB_TOKEN,
+      }
+    }
+  ]
 };

@@ -7,6 +7,7 @@ const chrono = require('chrono-node');
 const crypto = require('crypto');
 
 if (require('electron-squirrel-startup')) app.quit();
+require('update-electron-app')();
 
 const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
 const TRAY_ICON = nativeImage.createFromPath(process.platform === 'darwin' ? path.resolve(__dirname, '..', '..', 'resources', 'tray-icon-apple.png') : path.resolve(__dirname, '..', '..', 'resources', 'tray-icon.png'));
