@@ -12,6 +12,7 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         icon: './resources/icon.ico',
+        iconUrl: 'https://s3.pub2.infomaniak.cloud/object/v1/AUTH_01131d833f1047f585c2ab48179a040a/pingr/iconURL.ico',
         setupIcon: './resources/icon.ico'
       },
     },

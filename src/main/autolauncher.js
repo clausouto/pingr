@@ -9,13 +9,6 @@ class AutoLauncher {
                 useLaunchAgent: true
             },
         });
-
-        this.autoLaunch.isEnabled().then((isEnabled) => {
-            if (!isEnabled) {
-                Logger.info('Enabling auto launch at startup');
-                this.autoLaunch.enable();
-            }
-        });
     }
 
     toggleAutoLaunch() {
