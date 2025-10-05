@@ -33,5 +33,9 @@
     "chrono-node": "^2.9.0",
     "electron-squirrel-startup": "^1.0.1",
     "update-electron-app": "^3.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clausouto/pingr.git"
   }
 }
