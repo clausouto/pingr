@@ -191,9 +191,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Electron](https://www.electronjs.org/)
 - Natural language parsing powered by [Chrono](https://github.com/wanasit/chrono)
 - UI components from [Bootstrap](https://getbootstrap.com/)
-
----
-
-<div align="center">
-  Made with ❤️ by Claudio Souto
-</div>
