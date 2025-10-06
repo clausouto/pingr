@@ -193,7 +193,6 @@ app.whenReady().then(() => {
                     task.timestamp = newTime.timestamp;
                 } else {
                     const timeAdjustMatch = newContent.match(/([+-]\d+)/);
-                    console.log('Time adjust match:', timeAdjustMatch);
                     if (timeAdjustMatch) {
                         const now = new Date();
                         let adjustment = parseInt(timeAdjustMatch[0]);
