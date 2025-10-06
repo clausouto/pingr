@@ -1,16 +1,13 @@
 const { app, BrowserWindow, ipcMain, Notification, Tray, nativeImage, Menu } = require('electron');
+require('./squirrel-startup');
 const Logger = require('./logger');
 const { loadTasks, saveTasks } = require('./tasks');
 const { loadConfig } = require('./config');
 const { updateElectronApp } = require('update-electron-app');
-const { handleStartupEvent } = require('./squirrel-startup');
 const path = require('node:path');
 const chrono = require('chrono-node');
 const crypto = require('crypto');
 
-if (handleStartupEvent()) {
-  return;
-}
 updateElectronApp();
 
 const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
