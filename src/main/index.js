@@ -140,7 +140,7 @@ app.whenReady().then(() => {
         const newTask = {
             id: crypto.randomUUID(),
             content: task.content,
-            timeText: time.text.trim(),
+            timeText: time.text,
             timestamp: time.timestamp,
             createdAt: new Date().getTime(),
             completed: false,
