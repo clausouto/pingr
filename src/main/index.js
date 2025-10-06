@@ -3,11 +3,14 @@ const Logger = require('./logger');
 const { loadTasks, saveTasks } = require('./tasks');
 const { loadConfig } = require('./config');
 const { updateElectronApp } = require('update-electron-app');
+const { handleStartupEvent } = require('./squirrel-startup');
 const path = require('node:path');
 const chrono = require('chrono-node');
 const crypto = require('crypto');
 
-if (require('electron-squirrel-startup')) app.quit();
+if (handleStartupEvent()) {
+  return;
+}
 updateElectronApp();
 
 const ICON = nativeImage.createFromPath(path.resolve(__dirname, '..', '..', 'resources', 'icon.png'));
@@ -140,7 +143,7 @@ app.whenReady().then(() => {
         const newTask = {
             id: crypto.randomUUID(),
             content: task.content,
-            timeText: time.text,
+            timeText: time.text.trim(),
             timestamp: time.timestamp,
             createdAt: new Date().getTime(),
             completed: false,
@@ -181,6 +184,7 @@ app.whenReady().then(() => {
             const newTime = calculateTime(newContent);
             task.content = newContent;
             if (newTime && newTime.text && newTime.timestamp) {
+                newTime.text = newTime.text.trim();
                 if (task.timeText !== newTime.text) {
                     if (task.timestamp !== newTime.timestamp) {
                         task.notified = false;
@@ -189,6 +193,7 @@ app.whenReady().then(() => {
                     task.timestamp = newTime.timestamp;
                 } else {
                     const timeAdjustMatch = newContent.match(/([+-]\d+)/);
+                    console.log('Time adjust match:', timeAdjustMatch);
                     if (timeAdjustMatch) {
                         const now = new Date();
                         let adjustment = parseInt(timeAdjustMatch[0]);
@@ -249,6 +254,7 @@ app.whenReady().then(() => {
         tray.setContextMenu(menu);
 
         tray.on('click', () => {
+            if (process.platform === 'darwin') return;
             if (mainWindow) {
                 mainWindow.show();
                 mainWindow.focus();

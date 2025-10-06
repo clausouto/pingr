@@ -2,7 +2,7 @@ const { app } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-const LOG_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'pingr.log') : path.join(__dirname, '..', 'pingr.log');
+const LOG_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'pingr.log') : path.join(__dirname, '..', '..', 'pingr.log');
 
 class Logger {
     static log(level, message, error = null) {

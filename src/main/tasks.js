@@ -60,7 +60,6 @@ function saveTasks(tasks) {
                 version: '0.0.1'
             }, null, 2);
         } else {
-            Logger.warn('safeStorage encryption not available or not enabled, saving as plain text');
             dataToSave = JSON.stringify(tasks, null, 2);
         }
 

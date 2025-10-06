@@ -20,7 +20,6 @@ Pingr is a lightweight desktop reminder application built with Electron that hel
 - **Smart Notifications**: Get notified when tasks are due
 - **Task History**: View completed tasks in a dedicated history section
 - **Data Encryption**: Optional encryption for your task data using Electron's SafeStorage
-- **Auto-Launch**: Configure the app to start automatically when your system boots
 - **System Tray Integration**: Quick access from your system tray
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Export Tasks**: Export your tasks to JSON format (unencrypted)
@@ -33,7 +32,7 @@ Pingr is a lightweight desktop reminder application built with Electron that hel
 Download the latest release for your platform from the [Releases](https://github.com/clausouto/pingr/releases) page:
 
 - **Windows**: `.exe` installer
-- **macOS**: `.dmg` installer
+- **macOS**: `.zip` archive
 - **Linux**: `.deb` or `.rpm` package
 
 ### Build from Source
@@ -114,7 +113,8 @@ pingr/
 │   │   ├── tasks.js    # Task management
 │   │   ├── config.js   # Configuration management
 │   │   ├── logger.js   # Logging utility
-│   │   └── autolauncher.js  # Auto-launch functionality
+│   │   ├── autolauncher.js  # Auto-launch functionality
+│   │   └── squirrel-startup.js  # Squirrel startup handling
 │   ├── preload/        # Preload scripts
 │   │   └── app.js      # IPC bridge
 │   ├── renderer/       # Renderer process (UI)
@@ -142,8 +142,8 @@ pingr/
 - **Bootstrap 5**: UI framework
 - **Bootstrap Icons**: Icon library
 - **Chrono-node**: Natural language date parser
-- **auto-launch**: Auto-start functionality
-- **update-electron-app**: Automatic updates
+- **update-electron-app**: Automatic updates through GitHub releases
+- **Squirrel**: Windows installer
 
 ## 🔒 Data Storage
 

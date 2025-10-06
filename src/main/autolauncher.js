@@ -1,29 +1,14 @@
-const AutoLaunch = require('auto-launch');
-const Logger = require('./logger');
+const { app } = require('electron/main');
 
 class AutoLauncher {
-    constructor() {
-        this.autoLaunch = new AutoLaunch({
-            name: 'Pingr'
-        });
-    }
-
-    toggleAutoLaunch() {
-        this.autoLaunch.isEnabled().then((isEnabled) => {
-            if (isEnabled) {
-                Logger.info('Disabling auto launch at startup');
-                this.autoLaunch.disable();
-            } else {
-                Logger.info('Enabling auto launch at startup');
-                this.autoLaunch.enable();
-            }
-        }).catch((err) => {
-            Logger.error('Error toggling auto launch', err);
+    toggleAutoLaunch() {    
+        app.setLoginItemSettings({
+            openAtLogin: !app.getLoginItemSettings().openAtLogin
         });
     }
 
     getAutoLaunchStatus() {
-        return this.autoLaunch.isEnabled();
+        return app.getLoginItemSettings().openAtLogin;
     }
 }
 
