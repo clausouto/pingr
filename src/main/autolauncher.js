@@ -4,10 +4,7 @@ const Logger = require('./logger');
 class AutoLauncher {
     constructor() {
         this.autoLaunch = new AutoLaunch({
-            name: 'Pingr',
-            mac: {
-                useLaunchAgent: true
-            },
+            name: 'Pingr'
         });
     }
 

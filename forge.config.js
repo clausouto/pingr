@@ -5,6 +5,14 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: './resources/icon',
+    osxSign: {
+      identity: process.env.SIGN_ID
+    },
+    osxNotarize: {
+      appleId: process.env.APPLE_ID,
+      appleIdPassword: process.env.APPLE_PASSWORD,
+      teamId: process.env.APPLE_TEAM_ID
+    }
   },
   rebuildConfig: {},
   makers: [
@@ -17,11 +25,8 @@ module.exports = {
       },
     },
     {
-      name: '@electron-forge/maker-dmg',
+      name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
-      config: {
-        icon: './resources/icon.icns',
-      },
     },
     {
       name: '@electron-forge/maker-deb',
@@ -51,7 +56,7 @@ module.exports = {
   ],
   publishers: [
     {
-      name : '@electron-forge/publisher-github',
+      name: '@electron-forge/publisher-github',
       config: {
         repository: {
           owner: 'clausouto',
