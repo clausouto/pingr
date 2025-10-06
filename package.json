@@ -1,7 +1,7 @@
 {
   "name": "pingr",
   "productName": "Pingr",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "app de gestion de rappels",
   "main": "src/main/index.js",
   "scripts": {
