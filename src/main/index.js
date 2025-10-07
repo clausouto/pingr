@@ -43,7 +43,7 @@ function sourceFile() {
 function calculateTime(content) {
     if (!content) return;
     try {
-        const timeInfo = chrono.fr.parse(content);
+        const timeInfo = chrono[i18n.getLocale()].parse(content);
         if (timeInfo.length === 0) return {
             text: null,
             timestamp: null
@@ -182,7 +182,7 @@ app.whenReady().then(() => {
         tasks.push(newTask);
 
         if (saveTasks(tasks)) {
-            log.info('Task saved successfully');
+            log.debug('Task saved successfully');
             return { success: true, task: newTask };
         } else {
             log.error('Failed to save task');
