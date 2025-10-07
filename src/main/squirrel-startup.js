@@ -1,14 +1,10 @@
-const { app } = require('electron');
+const { app } = require('electron/main');
 
 if (handleSquirrelEvent()) {
     return;
 }
 
 function handleSquirrelEvent() {
-    if (process.platform !== 'win32') {
-        return false;
-    }
-
     if (process.argv.length === 1) {
         return false;
     }

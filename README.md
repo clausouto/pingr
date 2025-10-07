@@ -6,7 +6,7 @@
   **A simple and elegant reminder management application**
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-  [![Version](https://img.shields.io/badge/version-0.0.2-green.svg)](package.json)
+  [![Version](https://img.shields.io/badge/version-0.0.3-green.svg)](package.json)
 </div>
 
 ## 📝 Description
@@ -112,8 +112,8 @@ pingr/
 │   │   ├── menu.js     # Application menu
 │   │   ├── tasks.js    # Task management
 │   │   ├── config.js   # Configuration management
-│   │   ├── logger.js   # Logging utility
 │   │   ├── autolauncher.js  # Auto-launch functionality
+│   │   ├── i18n.js     # Internationalization
 │   │   └── squirrel-startup.js  # Squirrel startup handling
 │   ├── preload/        # Preload scripts
 │   │   └── app.js      # IPC bridge

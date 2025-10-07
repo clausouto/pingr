@@ -1,7 +1,6 @@
 // Work in progress, do not use in production yet
 
-const crypto = require('crypto');
-const Logger = require('./logger');
+const crypto = require('node:crypto');
 
 function deriveKey(password, salt) {
     return crypto.scryptSync(password, salt, 32);
@@ -44,7 +43,6 @@ function decrypt(encryptedData, password) {
 
         return decrypted
     } catch (error) {
-        Logger.error("Invalid password or corrupted data");
         return null;
     }
 }

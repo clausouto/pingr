@@ -1,8 +1,11 @@
 const { Menu, safeStorage, dialog } = require('electron/main');
-const fs = require('fs');
+
+const fs = require('node:fs');
+
 const autoLauncher = require('./autolauncher');
 const { loadConfig, writeConfig } = require('./config');
 const { resetTasksFile, exportTasks } = require('./tasks');
+const i18n = require('./i18n');
 
 function createMenu() {
   const template = [
@@ -15,10 +18,10 @@ function createMenu() {
     { role: 'windowMenu' },
     {
       role: 'options',
-      label: 'Paramètres',
+      label: i18n.__('menu.settings'),
       submenu: [
         {
-          label: 'Lancer au démarrage',
+          label: i18n.__('menu.autoLaunch'),
           type: 'checkbox',
           checked: autoLauncher.getAutoLaunchStatus(),
           click: async () => {
@@ -29,7 +32,7 @@ function createMenu() {
           type: 'separator',
         },
         {
-          label: 'Chiffrer les données (expérimental)',
+          label: i18n.__('menu.encryptData'),
           type: 'checkbox',
           checked: safeStorage.isEncryptionAvailable() && loadConfig().useEncryption,
           click: async () => {
@@ -39,11 +42,11 @@ function createMenu() {
           },
         },
         {
-          label: 'Exporter les tâches (non chiffrées)',
+          label: i18n.__('menu.exportTasks'),
           click: () => {
             const tasks = exportTasks();
             dialog.showSaveDialog({
-              title: 'Exporter les tâches',
+              title: i18n.__('menu.exportTasks'),
               defaultPath: 'tasks.json',
             }).then((result) => {
               if (!result.canceled && result.filePath) {
@@ -56,7 +59,7 @@ function createMenu() {
           type: 'separator',
         },
         {
-          label: 'Réinitialiser les tâches',
+          label: i18n.__('menu.resetTasks'),
           click: resetTasksFile,
         }
       ]

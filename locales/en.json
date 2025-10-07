@@ -1,0 +1,26 @@
+{
+	"tray": {
+		"open": "Open Pingr window"
+	},
+	"menu": {
+		"settings": "Settings",
+		"autoLaunch": "Launch at startup",
+		"encryptData": "Encrypt data (experimental)",
+		"exportTasks": "Export tasks (unencrypted)",
+		"resetTasks": "Reset tasks"
+	},
+	"ui": {
+		"noActiveTasks": "No active tasks",
+		"noCompletedTasks": "No completed tasks",
+		"completed": "Completed",
+		"reminder": "Reminder",
+		"today": "Today",
+		"tomorrow": "Tomorrow",
+		"inputPlaceholder": "What do I need to remind you?",
+		"reminderPlaceholder": "What do I need to remind you?",
+		"activeTasks": "Active tasks",
+		"showHistory": "Show history",
+		"completedTasks": "Completed tasks",
+		"reminders": "Reminders"
+	}
+}

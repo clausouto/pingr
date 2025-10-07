@@ -1,8 +1,10 @@
-const { app, safeStorage } = require('electron');
-const { loadConfig } = require('./config');
-const Logger = require('./logger');
+const { app, safeStorage } = require('electron/main');
+const log = require('electron-log');
+
 const path = require('node:path');
 const fs = require('node:fs');
+
+const { loadConfig } = require('./config');
 
 const TASKS_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'tasks.json') : path.resolve(__dirname, '..', '..', 'tasks.json');
 
@@ -40,7 +42,7 @@ function loadTasks() {
 
         return tasksCache;
     } catch (error) {
-        Logger.error('Error loading tasks', error);
+        log.error('Error loading tasks', error);
     }
     
     return [];
@@ -67,7 +69,7 @@ function saveTasks(tasks) {
         tasksCache = tasks;
         return true;
     } catch (error) {
-        Logger.error('Error saving tasks', error);
+        log.error('Error saving tasks', error);
         return false;
     }
 }
@@ -77,14 +79,14 @@ function resetTasksFile() {
         if (fs.existsSync(TASKS_FILE)) {
             fs.unlinkSync(TASKS_FILE);
             tasksCache = [];
-            Logger.info('Tasks file reset successfully');
+            log.info('Tasks file reset successfully');
             return true;
         } else {
-            Logger.warn('Tasks file does not exist, nothing to reset');
+            log.warn('Tasks file does not exist, nothing to reset');
             return false;
         }
     } catch (error) {
-        Logger.error('Error resetting tasks file', error);
+        log.error('Error resetting tasks file', error);
         return false;
     }
 }

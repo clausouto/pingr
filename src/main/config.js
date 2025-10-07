@@ -1,11 +1,14 @@
 const { app } = require('electron/main');
+
 const path = require('node:path');
 const fs = require('node:fs');
-const Logger = require('./logger');
+
+const log = require('electron-log');
 
 const CONFIG_FILE = app.isPackaged ? path.join(app.getPath('userData'), 'config.json') : path.resolve(__dirname, '..', '..', 'config.json');
 const DEFAULT_CONFIG = {
-    useEncryption: true
+    useEncryption: true,
+    language: 'en'
 };
 
 let config = null;
@@ -27,8 +30,7 @@ function loadConfig() {
             return config;
         }
     } catch (error) {
-        console.error(error);
-        Logger.error('Error loading config', error);
+        log.error('Error loading config', error);
     }
     return {};
 }
@@ -39,7 +41,7 @@ function writeConfig(config) {
         return true;
     }
     catch (error) {
-        Logger.error('Error writing config', error);
+        log.error('Error writing config', error);
         return false;
     }
 }

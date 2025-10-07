@@ -14,24 +14,25 @@
         <div class="row justify-content-center">
             <div class="col-lg-8 col-xl-6">
                 <header class="text-center mb-5">
-                    <h1 class="display-4 fw-light text-muted">Rappels</h1>
+                    <h1 class="display-4 fw-light text-muted" data-i18n="ui.reminders">Rappels</h1>
                 </header>
 
                 <main>
                     <form id="form" class="mb-4">
                         <div class="form-floating">
                             <input id="content" type="text" class="form-control form-control-lg border-0 shadow-sm"
+                                data-i18n-placeholder="ui.inputPlaceholder"    
                                 placeholder="Qu'est-ce que je dois te rappeler ?" required />
-                            <label for="content">Qu'est-ce que je dois te rappeler ?</label>
+                            <label for="content" data-i18n="ui.reminderPlaceholder">Qu'est-ce que je dois te rappeler ?</label>
                         </div>
                         <input type="submit" hidden />
                     </form>
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h5 text-muted mb-0">Tâches actives</h2>
+                        <h2 class="h5 text-muted mb-0" data-i18n="ui.activeTasks">Tâches actives</h2>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="showHistory">
-                            <label class="form-check-label history-toggle" for="showHistory">
+                            <label class="form-check-label history-toggle" for="showHistory" data-i18n="ui.showHistory">
                                 Afficher l'historique
                             </label>
                         </div>
@@ -39,7 +40,7 @@
 
                     <section id="list" class="mt-4"></section>
                     <section id="historyList" class="mt-4" style="display: none;">
-                        <h3 class="h6 text-muted mb-3">Tâches terminées</h3>
+                        <h3 class="h6 text-muted mb-3" data-i18n="ui.completedTasks">Tâches terminées</h3>
                         <div id="historyContent"></div>
                     </section>
                 </main>

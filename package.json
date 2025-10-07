@@ -1,7 +1,7 @@
 {
   "name": "pingr",
   "productName": "Pingr",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "app de gestion de rappels",
   "main": "src/main/index.js",
   "scripts": {
@@ -30,7 +30,9 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "chrono-node": "^2.9.0",
+    "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
+    "i18n": "^0.15.2",
     "update-electron-app": "^3.1.1"
   },
   "repository": {

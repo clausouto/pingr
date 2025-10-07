@@ -1,0 +1,26 @@
+{
+    "tray": {
+        "open": "Ouvrir Pingr"
+    },
+    "menu": {
+        "settings": "Paramètres",
+        "autoLaunch": "Lancer au démarrage",
+        "encryptData": "Chiffrer les données (expérimental)",
+        "exportTasks": "Exporter les tâches (non chiffrées)",
+        "resetTasks": "Réinitialiser les tâches"
+    },
+    "ui": {
+        "noActiveTasks": "Aucune tâche en cours",
+        "noCompletedTasks": "Aucune tâche terminée",
+        "completed": "Terminé",
+        "reminder": "Rappel",
+        "today": "Aujourd'hui",
+        "tomorrow": "Demain",
+        "inputPlaceholder": "Qu'est-ce que je dois te rappeler ?",
+        "reminderPlaceholder": "Qu'est-ce que je dois te rappeler ?",
+        "activeTasks": "Tâches actives",
+        "showHistory": "Afficher l'historique",
+        "completedTasks": "Tâches terminées",
+        "reminders": "Rappels"
+    }
+}
